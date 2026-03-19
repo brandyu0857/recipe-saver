@@ -10,3 +10,10 @@ db.version(2).stores({
   recipes: '++id, name, createdAt',
   menus: '++id, name, createdAt',
 })
+
+db.version(3).stores({
+  recipes: '++id, name, createdAt',
+  menus: '++id, name, createdAt',
+  families: '++id, name, createdAt',
+  members: '++id, familyId, name, createdAt',
+})

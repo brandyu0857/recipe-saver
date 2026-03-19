@@ -1,32 +1,92 @@
 import { useState } from 'react'
+import { MemberAvatar } from './FamilyManager'
 
-export default function MenuBuilder({ recipes, onSave, onClose }) {
-  const [selectedIds, setSelectedIds] = useState([])
+function RecipeRow({ recipe, selected, onToggle }) {
+  return (
+    <button
+      onClick={onToggle}
+      className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left ${
+        selected ? 'border-stone-900 bg-stone-50' : 'border-stone-100 bg-white hover:border-stone-200'
+      }`}
+    >
+      <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${
+        selected ? 'bg-stone-900 border-stone-900' : 'border-stone-300'
+      }`}>
+        {selected && <span className="text-white text-xs leading-none">✓</span>}
+      </div>
+      <div className="w-10 h-10 rounded-lg overflow-hidden bg-stone-100 shrink-0">
+        {recipe.photo
+          ? <img src={recipe.photo} alt={recipe.name} className="w-full h-full object-cover" />
+          : <div className="w-full h-full flex items-center justify-center text-lg">🍽️</div>
+        }
+      </div>
+      <div className="min-w-0">
+        <p className="font-medium text-stone-900 text-sm truncate">{recipe.name}</p>
+        <p className="text-stone-400 text-xs">{recipe.ingredients?.length || 0} ingredients</p>
+      </div>
+    </button>
+  )
+}
+
+export default function MenuBuilder({ recipes, families, members, onSave, onClose }) {
+  const [mode, setMode] = useState('personal') // 'personal' | 'family'
+  const [selectedFamilyId, setSelectedFamilyId] = useState(families[0]?.id ?? null)
+  const [personalIds, setPersonalIds] = useState([])
+  // contributions: { [memberId]: Set of recipeIds }
+  const [contributions, setContributions] = useState({})
   const [menuName, setMenuName] = useState('')
-  const [nameError, setNameError] = useState('')
+  const [error, setError] = useState('')
 
-  function toggleRecipe(id) {
-    setSelectedIds(prev =>
+  const selectedFamily = families.find(f => f.id === selectedFamilyId)
+  const familyMembers = members.filter(m => m.familyId === selectedFamilyId)
+
+  function togglePersonal(id) {
+    setPersonalIds(prev =>
       prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
     )
   }
 
+  function toggleContribution(memberId, recipeId) {
+    setContributions(prev => {
+      const current = new Set(prev[memberId] ?? [])
+      current.has(recipeId) ? current.delete(recipeId) : current.add(recipeId)
+      return { ...prev, [memberId]: current }
+    })
+  }
+
+  function totalSelected() {
+    if (mode === 'personal') return personalIds.length
+    return Object.values(contributions).reduce((s, set) => s + set.size, 0)
+  }
+
   function handleSave() {
-    if (!menuName.trim()) {
-      setNameError('Menu name is required')
-      return
+    if (!menuName.trim()) { setError('Menu name is required'); return }
+    if (totalSelected() === 0) { setError('Select at least one recipe'); return }
+
+    if (mode === 'personal') {
+      onSave({ name: menuName.trim(), recipeIds: personalIds })
+    } else {
+      const contribArray = familyMembers
+        .map(m => ({
+          memberId: m.id,
+          memberName: m.name,
+          memberColor: m.color,
+          recipeIds: [...(contributions[m.id] ?? [])],
+        }))
+        .filter(c => c.recipeIds.length > 0)
+      onSave({
+        name: menuName.trim(),
+        familyId: selectedFamilyId,
+        familyName: selectedFamily?.name,
+        contributions: contribArray,
+      })
     }
-    if (selectedIds.length === 0) {
-      setNameError('Select at least one recipe')
-      return
-    }
-    onSave({ name: menuName.trim(), recipeIds: selectedIds })
   }
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative bg-white w-full sm:max-w-lg sm:rounded-2xl rounded-t-2xl max-h-[90vh] flex flex-col shadow-xl">
+      <div className="relative bg-white w-full sm:max-w-lg sm:rounded-2xl rounded-t-2xl max-h-[92vh] flex flex-col shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-stone-100">
           <div>
@@ -36,62 +96,110 @@ export default function MenuBuilder({ recipes, onSave, onClose }) {
           <button onClick={onClose} className="text-stone-400 hover:text-stone-600 text-xl leading-none p-1">×</button>
         </div>
 
-        {/* Recipe selection */}
-        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-2">
-          {recipes.length === 0 && (
-            <p className="text-stone-400 text-sm text-center py-8">No recipes yet. Add some recipes first.</p>
-          )}
-          {recipes.map(recipe => {
-            const selected = selectedIds.includes(recipe.id)
-            return (
+        {/* Mode toggle */}
+        {families.length > 0 && (
+          <div className="px-5 pt-4 flex gap-2">
+            <button
+              onClick={() => setMode('personal')}
+              className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${
+                mode === 'personal' ? 'bg-stone-900 text-white' : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
+              }`}
+            >
+              Personal
+            </button>
+            <button
+              onClick={() => setMode('family')}
+              className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${
+                mode === 'family' ? 'bg-stone-900 text-white' : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
+              }`}
+            >
+              Family
+            </button>
+          </div>
+        )}
+
+        {/* Family selector */}
+        {mode === 'family' && families.length > 1 && (
+          <div className="px-5 pt-3 flex gap-2 flex-wrap">
+            {families.map(f => (
               <button
-                key={recipe.id}
-                onClick={() => toggleRecipe(recipe.id)}
-                className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left ${
-                  selected
-                    ? 'border-stone-900 bg-stone-50'
-                    : 'border-stone-100 bg-white hover:border-stone-200'
+                key={f.id}
+                onClick={() => { setSelectedFamilyId(f.id); setContributions({}) }}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                  selectedFamilyId === f.id
+                    ? 'bg-stone-900 text-white'
+                    : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
                 }`}
               >
-                {/* Checkbox */}
-                <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${
-                  selected ? 'bg-stone-900 border-stone-900' : 'border-stone-300'
-                }`}>
-                  {selected && <span className="text-white text-xs leading-none">✓</span>}
-                </div>
-
-                {/* Photo */}
-                <div className="w-12 h-12 rounded-lg overflow-hidden bg-stone-100 shrink-0">
-                  {recipe.photo ? (
-                    <img src={recipe.photo} alt={recipe.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-xl">🍽️</div>
-                  )}
-                </div>
-
-                {/* Info */}
-                <div className="min-w-0">
-                  <p className="font-medium text-stone-900 text-sm truncate">{recipe.name}</p>
-                  <p className="text-stone-400 text-xs">
-                    {recipe.ingredients?.length || 0} ingredients
-                  </p>
-                </div>
+                {f.name}
               </button>
-            )
-          })}
+            ))}
+          </div>
+        )}
+
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+          {/* Personal mode */}
+          {mode === 'personal' && (
+            recipes.length === 0
+              ? <p className="text-stone-400 text-sm text-center py-8">No recipes yet.</p>
+              : recipes.map(r => (
+                <RecipeRow
+                  key={r.id}
+                  recipe={r}
+                  selected={personalIds.includes(r.id)}
+                  onToggle={() => togglePersonal(r.id)}
+                />
+              ))
+          )}
+
+          {/* Family mode */}
+          {mode === 'family' && (
+            familyMembers.length === 0
+              ? <p className="text-stone-400 text-sm text-center py-8">No members in this family yet. Add members in the Family tab.</p>
+              : familyMembers.map(member => {
+                const memberRecipeIds = contributions[member.id] ?? new Set()
+                return (
+                  <div key={member.id}>
+                    {/* Member header */}
+                    <div className="flex items-center gap-2 mb-2">
+                      <MemberAvatar member={member} size="sm" />
+                      <span className="text-sm font-semibold text-stone-800">{member.name}</span>
+                      <span className="text-stone-400 text-xs ml-auto">
+                        {memberRecipeIds.size} selected
+                      </span>
+                    </div>
+                    {/* Recipes for this member */}
+                    <div className="space-y-2 pl-9">
+                      {recipes.length === 0
+                        ? <p className="text-stone-400 text-xs">No recipes available.</p>
+                        : recipes.map(r => (
+                          <RecipeRow
+                            key={r.id}
+                            recipe={r}
+                            selected={memberRecipeIds.has(r.id)}
+                            onToggle={() => toggleContribution(member.id, r.id)}
+                          />
+                        ))
+                      }
+                    </div>
+                  </div>
+                )
+              })
+          )}
         </div>
 
-        {/* Footer: name + save */}
+        {/* Footer */}
         <div className="px-5 pb-5 pt-4 border-t border-stone-100 space-y-3">
           <div>
             <input
               type="text"
               placeholder="Menu name (e.g. Sunday Dinner)"
               value={menuName}
-              onChange={e => { setMenuName(e.target.value); setNameError('') }}
+              onChange={e => { setMenuName(e.target.value); setError('') }}
               className="w-full border border-stone-200 rounded-xl px-4 py-2.5 text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-300"
             />
-            {nameError && <p className="text-red-500 text-xs mt-1">{nameError}</p>}
+            {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
           </div>
           <div className="flex gap-2">
             <button
@@ -104,7 +212,7 @@ export default function MenuBuilder({ recipes, onSave, onClose }) {
               onClick={handleSave}
               className="flex-1 bg-stone-900 text-white text-sm font-medium py-2.5 rounded-xl hover:bg-stone-700 transition-colors"
             >
-              Save Menu ({selectedIds.length})
+              Save Menu ({totalSelected()})
             </button>
           </div>
         </div>

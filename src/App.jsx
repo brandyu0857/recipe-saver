@@ -5,11 +5,14 @@ import RecipeForm from './components/RecipeForm'
 import RecipeDetail from './components/RecipeDetail'
 import MenuBuilder from './components/MenuBuilder'
 import MenuDetail from './components/MenuDetail'
+import FamilyManager from './components/FamilyManager'
 
 export default function App() {
   const [recipes, setRecipes] = useState([])
   const [menus, setMenus] = useState([])
-  const [tab, setTab] = useState('recipes') // 'recipes' | 'menus'
+  const [families, setFamilies] = useState([])
+  const [members, setMembers] = useState([])
+  const [tab, setTab] = useState('recipes') // 'recipes' | 'menus' | 'family'
   const [selectedRecipe, setSelectedRecipe] = useState(null)
   const [showForm, setShowForm] = useState(false)
   const [editingRecipe, setEditingRecipe] = useState(null)
@@ -17,18 +20,20 @@ export default function App() {
   const [selectedMenu, setSelectedMenu] = useState(null)
 
   useEffect(() => {
-    loadRecipes()
-    loadMenus()
+    loadAll()
   }, [])
 
-  async function loadRecipes() {
-    const all = await db.recipes.orderBy('createdAt').reverse().toArray()
-    setRecipes(all)
-  }
-
-  async function loadMenus() {
-    const all = await db.menus.orderBy('createdAt').reverse().toArray()
-    setMenus(all)
+  async function loadAll() {
+    const [r, m, fam, mem] = await Promise.all([
+      db.recipes.orderBy('createdAt').reverse().toArray(),
+      db.menus.orderBy('createdAt').reverse().toArray(),
+      db.families.orderBy('createdAt').toArray(),
+      db.members.orderBy('createdAt').toArray(),
+    ])
+    setRecipes(r)
+    setMenus(m)
+    setFamilies(fam)
+    setMembers(mem)
   }
 
   async function handleSave(formData) {
@@ -37,7 +42,8 @@ export default function App() {
     } else {
       await db.recipes.add({ ...formData, createdAt: new Date(), updatedAt: new Date() })
     }
-    await loadRecipes()
+    const r = await db.recipes.orderBy('createdAt').reverse().toArray()
+    setRecipes(r)
     setShowForm(false)
     setEditingRecipe(null)
     setSelectedRecipe(null)
@@ -46,32 +52,82 @@ export default function App() {
   async function handleDelete(recipe) {
     if (!confirm(`Delete "${recipe.name}"?`)) return
     await db.recipes.delete(recipe.id)
-    await loadRecipes()
+    const r = await db.recipes.orderBy('createdAt').reverse().toArray()
+    setRecipes(r)
     setSelectedRecipe(null)
   }
 
-  async function handleSaveMenu({ name, recipeIds }) {
-    await db.menus.add({ name, recipeIds, createdAt: new Date(), updatedAt: new Date() })
-    await loadMenus()
+  async function handleSaveMenu(menuData) {
+    await db.menus.add({ ...menuData, createdAt: new Date(), updatedAt: new Date() })
+    const m = await db.menus.orderBy('createdAt').reverse().toArray()
+    setMenus(m)
     setShowMenuBuilder(false)
     setTab('menus')
   }
 
   async function handleDeleteMenu(id) {
     await db.menus.delete(id)
-    await loadMenus()
+    const m = await db.menus.orderBy('createdAt').reverse().toArray()
+    setMenus(m)
     setSelectedMenu(null)
   }
 
   async function handleRenameMenu(id, newName) {
     await db.menus.update(id, { name: newName, updatedAt: new Date() })
-    await loadMenus()
+    const m = await db.menus.orderBy('createdAt').reverse().toArray()
+    setMenus(m)
     setSelectedMenu(prev => prev ? { ...prev, name: newName } : prev)
+  }
+
+  async function handleCreateFamily(name) {
+    await db.families.add({ name, createdAt: new Date() })
+    const fam = await db.families.orderBy('createdAt').toArray()
+    setFamilies(fam)
+  }
+
+  async function handleDeleteFamily(id) {
+    await db.members.where('familyId').equals(id).delete()
+    await db.families.delete(id)
+    const [fam, mem] = await Promise.all([
+      db.families.orderBy('createdAt').toArray(),
+      db.members.orderBy('createdAt').toArray(),
+    ])
+    setFamilies(fam)
+    setMembers(mem)
+  }
+
+  async function handleAddMember(familyId, name, color) {
+    await db.members.add({ familyId, name, color, createdAt: new Date() })
+    const mem = await db.members.orderBy('createdAt').toArray()
+    setMembers(mem)
+  }
+
+  async function handleDeleteMember(id) {
+    await db.members.delete(id)
+    const mem = await db.members.orderBy('createdAt').toArray()
+    setMembers(mem)
   }
 
   function openAdd() { setEditingRecipe(null); setShowForm(true) }
   function openEdit(recipe) { setEditingRecipe(recipe); setSelectedRecipe(null); setShowForm(true) }
   function closeForm() { setShowForm(false); setEditingRecipe(null) }
+
+  // Compute total recipe count for a menu (personal or family)
+  function menuRecipeCount(menu) {
+    if (menu.contributions) return menu.contributions.reduce((s, c) => s + c.recipeIds.length, 0)
+    return menu.recipeIds?.length || 0
+  }
+
+  function menuAllRecipeIds(menu) {
+    if (menu.contributions) return menu.contributions.flatMap(c => c.recipeIds)
+    return menu.recipeIds ?? []
+  }
+
+  const TABS = [
+    { key: 'recipes', label: 'Recipes' },
+    { key: 'menus', label: 'Menus', badge: menus.length || null },
+    { key: 'family', label: 'Family', badge: families.length || null },
+  ]
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#faf9f7' }}>
@@ -105,38 +161,32 @@ export default function App() {
         </div>
 
         {/* Tabs */}
-        <div className="max-w-2xl mx-auto px-4 flex gap-0 border-t border-stone-100">
-          <button
-            onClick={() => setTab('recipes')}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-              tab === 'recipes'
-                ? 'border-stone-900 text-stone-900'
-                : 'border-transparent text-stone-400 hover:text-stone-600'
-            }`}
-          >
-            Recipes
-          </button>
-          <button
-            onClick={() => setTab('menus')}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${
-              tab === 'menus'
-                ? 'border-stone-900 text-stone-900'
-                : 'border-transparent text-stone-400 hover:text-stone-600'
-            }`}
-          >
-            Menus
-            {menus.length > 0 && (
-              <span className="bg-stone-100 text-stone-500 text-xs px-1.5 py-0.5 rounded-full">
-                {menus.length}
-              </span>
-            )}
-          </button>
+        <div className="max-w-2xl mx-auto px-4 flex border-t border-stone-100">
+          {TABS.map(t => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${
+                tab === t.key
+                  ? 'border-stone-900 text-stone-900'
+                  : 'border-transparent text-stone-400 hover:text-stone-600'
+              }`}
+            >
+              {t.label}
+              {t.badge ? (
+                <span className="bg-stone-100 text-stone-500 text-xs px-1.5 py-0.5 rounded-full">
+                  {t.badge}
+                </span>
+              ) : null}
+            </button>
+          ))}
         </div>
       </header>
 
       {/* Main */}
       <main className="max-w-2xl mx-auto px-4 py-6">
-        {/* Recipes tab */}
+
+        {/* ── Recipes tab ── */}
         {tab === 'recipes' && (
           recipes.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 text-center">
@@ -164,7 +214,7 @@ export default function App() {
           )
         )}
 
-        {/* Menus tab */}
+        {/* ── Menus tab ── */}
         {tab === 'menus' && (
           menus.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 text-center">
@@ -193,15 +243,16 @@ export default function App() {
               </div>
               <div className="space-y-3">
                 {menus.map(menu => {
-                  const count = menu.recipeIds?.length || 0
-                  const previews = recipes.filter(r => menu.recipeIds?.includes(r.id)).slice(0, 3)
+                  const count = menuRecipeCount(menu)
+                  const allIds = menuAllRecipeIds(menu)
+                  const previews = recipes.filter(r => allIds.includes(r.id)).slice(0, 3)
+                  const isFamily = Boolean(menu.contributions)
                   return (
                     <button
                       key={menu.id}
                       onClick={() => setSelectedMenu(menu)}
                       className="w-full bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow text-left flex items-center gap-4"
                     >
-                      {/* Photo strip */}
                       <div className="flex -space-x-2 shrink-0">
                         {previews.map(r => (
                           <div key={r.id} className="w-10 h-10 rounded-xl overflow-hidden bg-stone-100 border-2 border-white">
@@ -217,9 +268,12 @@ export default function App() {
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="font-serif font-semibold text-stone-900 truncate">{menu.name}</p>
-                        <p className="text-stone-400 text-xs mt-0.5">
-                          {count} {count === 1 ? 'recipe' : 'recipes'}
-                        </p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          {isFamily && (
+                            <span className="text-xs text-stone-400">👨‍👩‍👧‍👦 {menu.familyName ?? 'Family'} ·</span>
+                          )}
+                          <span className="text-stone-400 text-xs">{count} {count === 1 ? 'recipe' : 'recipes'}</span>
+                        </div>
                       </div>
                       <span className="text-stone-300 text-lg">›</span>
                     </button>
@@ -228,6 +282,18 @@ export default function App() {
               </div>
             </>
           )
+        )}
+
+        {/* ── Family tab ── */}
+        {tab === 'family' && (
+          <FamilyManager
+            families={families}
+            members={members}
+            onCreateFamily={handleCreateFamily}
+            onDeleteFamily={handleDeleteFamily}
+            onAddMember={handleAddMember}
+            onDeleteMember={handleDeleteMember}
+          />
         )}
       </main>
 
@@ -250,6 +316,8 @@ export default function App() {
       {showMenuBuilder && (
         <MenuBuilder
           recipes={recipes}
+          families={families}
+          members={members}
           onSave={handleSaveMenu}
           onClose={() => setShowMenuBuilder(false)}
         />
