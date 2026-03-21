@@ -119,6 +119,8 @@ export const db = {
     async update(id, menu) {
       const patch = {}
       if (menu.name !== undefined) patch.name = menu.name
+      if (menu.recipeIds !== undefined) patch.recipe_ids = menu.recipeIds
+      if (menu.contributions !== undefined) patch.contributions = menu.contributions
       if (menu.updatedAt !== undefined) patch.updated_at = menu.updatedAt
       const { error } = await supabase.from('menus').update(patch).eq('id', id)
       if (error) throw error
