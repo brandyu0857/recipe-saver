@@ -25,10 +25,10 @@ export default function App() {
 
   async function loadAll() {
     const [r, m, fam, mem] = await Promise.all([
-      db.recipes.orderBy('createdAt').reverse().toArray(),
-      db.menus.orderBy('createdAt').reverse().toArray(),
-      db.families.orderBy('createdAt').toArray(),
-      db.members.orderBy('createdAt').toArray(),
+      db.recipes.getAll(),
+      db.menus.getAll(),
+      db.families.getAll(),
+      db.members.getAll(),
     ])
     setRecipes(r)
     setMenus(m)
@@ -42,8 +42,7 @@ export default function App() {
     } else {
       await db.recipes.add({ ...formData, createdAt: new Date(), updatedAt: new Date() })
     }
-    const r = await db.recipes.orderBy('createdAt').reverse().toArray()
-    setRecipes(r)
+    setRecipes(await db.recipes.getAll())
     setShowForm(false)
     setEditingRecipe(null)
     setSelectedRecipe(null)
@@ -52,60 +51,50 @@ export default function App() {
   async function handleDelete(recipe) {
     if (!confirm(`Delete "${recipe.name}"?`)) return
     await db.recipes.delete(recipe.id)
-    const r = await db.recipes.orderBy('createdAt').reverse().toArray()
-    setRecipes(r)
+    setRecipes(await db.recipes.getAll())
     setSelectedRecipe(null)
   }
 
   async function handleSaveMenu(menuData) {
     await db.menus.add({ ...menuData, createdAt: new Date(), updatedAt: new Date() })
-    const m = await db.menus.orderBy('createdAt').reverse().toArray()
-    setMenus(m)
+    setMenus(await db.menus.getAll())
     setShowMenuBuilder(false)
     setTab('menus')
   }
 
   async function handleDeleteMenu(id) {
     await db.menus.delete(id)
-    const m = await db.menus.orderBy('createdAt').reverse().toArray()
-    setMenus(m)
+    setMenus(await db.menus.getAll())
     setSelectedMenu(null)
   }
 
   async function handleRenameMenu(id, newName) {
     await db.menus.update(id, { name: newName, updatedAt: new Date() })
-    const m = await db.menus.orderBy('createdAt').reverse().toArray()
-    setMenus(m)
+    setMenus(await db.menus.getAll())
     setSelectedMenu(prev => prev ? { ...prev, name: newName } : prev)
   }
 
   async function handleCreateFamily(name) {
     await db.families.add({ name, createdAt: new Date() })
-    const fam = await db.families.orderBy('createdAt').toArray()
-    setFamilies(fam)
+    setFamilies(await db.families.getAll())
   }
 
   async function handleDeleteFamily(id) {
-    await db.members.where('familyId').equals(id).delete()
+    await db.members.deleteByFamilyId(id)
     await db.families.delete(id)
-    const [fam, mem] = await Promise.all([
-      db.families.orderBy('createdAt').toArray(),
-      db.members.orderBy('createdAt').toArray(),
-    ])
+    const [fam, mem] = await Promise.all([db.families.getAll(), db.members.getAll()])
     setFamilies(fam)
     setMembers(mem)
   }
 
   async function handleAddMember(familyId, name, color) {
     await db.members.add({ familyId, name, color, createdAt: new Date() })
-    const mem = await db.members.orderBy('createdAt').toArray()
-    setMembers(mem)
+    setMembers(await db.members.getAll())
   }
 
   async function handleDeleteMember(id) {
     await db.members.delete(id)
-    const mem = await db.members.orderBy('createdAt').toArray()
-    setMembers(mem)
+    setMembers(await db.members.getAll())
   }
 
   function openAdd() { setEditingRecipe(null); setShowForm(true) }
