@@ -4,12 +4,6 @@ import { MemberAvatar } from './FamilyManager'
 function RecipeItem({ recipe }) {
   return (
     <div className="flex items-center gap-3 p-3 bg-stone-50 rounded-xl">
-      <div className="w-12 h-12 rounded-lg overflow-hidden bg-stone-100 shrink-0">
-        {recipe.photo
-          ? <img src={recipe.photo} alt={recipe.name} className="w-full h-full object-cover" />
-          : <div className="w-full h-full flex items-center justify-center text-xl">🍽️</div>
-        }
-      </div>
       <div className="min-w-0">
         <p className="font-serif font-semibold text-stone-900 text-sm truncate">{recipe.name}</p>
         <p className="text-stone-400 text-xs mt-0.5">
@@ -32,12 +26,6 @@ function RecipePickerRow({ recipe, selected, onToggle }) {
         selected ? 'bg-stone-900 border-stone-900' : 'border-stone-300'
       }`}>
         {selected && <span className="text-white text-xs leading-none">✓</span>}
-      </div>
-      <div className="w-10 h-10 rounded-lg overflow-hidden bg-stone-100 shrink-0">
-        {recipe.photo
-          ? <img src={recipe.photo} alt={recipe.name} className="w-full h-full object-cover" />
-          : <div className="w-full h-full flex items-center justify-center text-lg">🍽️</div>
-        }
       </div>
       <div className="min-w-0">
         <p className="font-medium text-stone-900 text-sm truncate">{recipe.name}</p>

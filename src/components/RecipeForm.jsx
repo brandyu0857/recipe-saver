@@ -1,12 +1,11 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 
-const EMPTY_FORM = { name: '', description: '', ingredients: [], photo: null }
+const EMPTY_FORM = { name: '', description: '', ingredients: [] }
 
 export default function RecipeForm({ initial, onSave, onClose }) {
   const [form, setForm] = useState(initial ?? EMPTY_FORM)
   const [ingredientInput, setIngredientInput] = useState('')
   const [errors, setErrors] = useState({})
-  const fileRef = useRef()
 
   function set(field, value) {
     setForm(f => ({ ...f, [field]: value }))
@@ -29,14 +28,6 @@ export default function RecipeForm({ initial, onSave, onClose }) {
       e.preventDefault()
       addIngredient()
     }
-  }
-
-  function handlePhoto(e) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = ev => set('photo', ev.target.result)
-    reader.readAsDataURL(file)
   }
 
   function validate() {
@@ -71,41 +62,6 @@ export default function RecipeForm({ initial, onSave, onClose }) {
         {/* Body */}
         <form onSubmit={handleSubmit} className="overflow-y-auto flex-1">
           <div className="p-5 space-y-5">
-
-            {/* Photo */}
-            <div>
-              <label className="block text-xs font-medium text-stone-500 uppercase tracking-wide mb-2">
-                照片
-              </label>
-              {form.photo ? (
-                <div className="relative rounded-xl overflow-hidden aspect-video bg-stone-100">
-                  <img src={form.photo} alt="" className="w-full h-full object-cover" />
-                  <button
-                    type="button"
-                    onClick={() => set('photo', null)}
-                    className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full hover:bg-black/80 transition-colors"
-                  >
-                    移除
-                  </button>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => fileRef.current.click()}
-                  className="w-full border-2 border-dashed border-stone-200 rounded-xl py-8 flex flex-col items-center gap-2 hover:border-stone-400 hover:bg-stone-50 transition-colors"
-                >
-                  <span className="text-3xl">📷</span>
-                  <span className="text-sm text-stone-400">点击添加照片</span>
-                </button>
-              )}
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handlePhoto}
-              />
-            </div>
 
             {/* Name */}
             <div>

@@ -4,20 +4,6 @@ export default function RecipeCard({ recipe, onClick }) {
       onClick={onClick}
       className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 text-left w-full group"
     >
-      <div className="aspect-[4/3] bg-stone-100 overflow-hidden">
-        {recipe.photo ? (
-          <img
-            src={recipe.photo}
-            alt={recipe.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <span className="text-5xl">🍽️</span>
-          </div>
-        )}
-      </div>
-
       <div className="p-4">
         <h2 className="font-serif text-lg font-semibold text-stone-900 leading-snug mb-1 line-clamp-2">
           {recipe.name}

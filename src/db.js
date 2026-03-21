@@ -11,7 +11,6 @@ function toRecipe(row) {
     name: row.name,
     description: row.description,
     ingredients: row.ingredients ?? [],
-    photo: row.photo,
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at),
   }
@@ -65,7 +64,6 @@ export const db = {
           name: recipe.name,
           description: recipe.description ?? null,
           ingredients: recipe.ingredients ?? [],
-          photo: recipe.photo ?? null,
           created_at: recipe.createdAt,
           updated_at: recipe.updatedAt,
         })
@@ -79,7 +77,6 @@ export const db = {
       if (recipe.name !== undefined) patch.name = recipe.name
       if (recipe.description !== undefined) patch.description = recipe.description
       if (recipe.ingredients !== undefined) patch.ingredients = recipe.ingredients
-      if (recipe.photo !== undefined) patch.photo = recipe.photo
       if (recipe.updatedAt !== undefined) patch.updated_at = recipe.updatedAt
       const { error } = await supabase.from('recipes').update(patch).eq('id', id)
       if (error) throw error

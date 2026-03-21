@@ -240,8 +240,6 @@ export default function App() {
               <div className="space-y-3">
                 {menus.map(menu => {
                   const count = menuRecipeCount(menu)
-                  const allIds = menuAllRecipeIds(menu)
-                  const previews = recipes.filter(r => allIds.includes(r.id)).slice(0, 3)
                   const isFamily = Boolean(menu.contributions)
                   return (
                     <button
@@ -249,19 +247,6 @@ export default function App() {
                       onClick={() => setSelectedMenu(menu)}
                       className="w-full bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow text-left flex items-center gap-4"
                     >
-                      <div className="flex -space-x-2 shrink-0">
-                        {previews.map(r => (
-                          <div key={r.id} className="w-10 h-10 rounded-xl overflow-hidden bg-stone-100 border-2 border-white">
-                            {r.photo
-                              ? <img src={r.photo} alt={r.name} className="w-full h-full object-cover" />
-                              : <div className="w-full h-full flex items-center justify-center text-sm">🍽️</div>
-                            }
-                          </div>
-                        ))}
-                        {previews.length === 0 && (
-                          <div className="w-10 h-10 rounded-xl bg-stone-100 flex items-center justify-center text-sm">🍽️</div>
-                        )}
-                      </div>
                       <div className="min-w-0 flex-1">
                         <p className="font-serif font-semibold text-stone-900 truncate">{menu.name}</p>
                         <div className="flex items-center gap-2 mt-0.5">

@@ -2,19 +2,8 @@ export default function RecipeDetail({ recipe, onEdit, onDelete, onClose }) {
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="bg-white w-full sm:max-w-lg sm:rounded-2xl rounded-t-2xl max-h-[92vh] flex flex-col">
-        {/* Photo */}
-        {recipe.photo && (
-          <div className="aspect-video rounded-t-2xl overflow-hidden flex-shrink-0">
-            <img
-              src={recipe.photo}
-              alt={recipe.name}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        )}
-
         {/* Header */}
-        <div className={`flex items-start justify-between px-5 py-4 ${recipe.photo ? '' : 'border-b border-stone-100'}`}>
+        <div className="flex items-start justify-between px-5 py-4 border-b border-stone-100">
           <h2 className="font-serif text-xl font-semibold text-stone-900 leading-snug pr-4">
             {recipe.name}
           </h2>

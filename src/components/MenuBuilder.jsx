@@ -14,12 +14,6 @@ function RecipeRow({ recipe, selected, onToggle }) {
       }`}>
         {selected && <span className="text-white text-xs leading-none">✓</span>}
       </div>
-      <div className="w-10 h-10 rounded-lg overflow-hidden bg-stone-100 shrink-0">
-        {recipe.photo
-          ? <img src={recipe.photo} alt={recipe.name} className="w-full h-full object-cover" />
-          : <div className="w-full h-full flex items-center justify-center text-lg">🍽️</div>
-        }
-      </div>
       <div className="min-w-0">
         <p className="font-medium text-stone-900 text-sm truncate">{recipe.name}</p>
         <p className="text-stone-400 text-xs">{recipe.ingredients?.length || 0} 种食材</p>
