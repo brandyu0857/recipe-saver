@@ -35,8 +35,14 @@ create table members (
   created_at timestamptz not null default now()
 );
 
--- Enable Row Level Security (customize policies as needed)
+-- Enable Row Level Security
 alter table recipes  enable row level security;
 alter table menus    enable row level security;
 alter table families enable row level security;
 alter table members  enable row level security;
+
+-- Allow public (anon) full access to all tables
+create policy "public access" on recipes  for all using (true) with check (true);
+create policy "public access" on menus    for all using (true) with check (true);
+create policy "public access" on families for all using (true) with check (true);
+create policy "public access" on members  for all using (true) with check (true);
