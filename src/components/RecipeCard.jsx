@@ -30,8 +30,7 @@ export default function RecipeCard({ recipe, onClick }) {
         <div className="flex items-center gap-1 text-stone-400 text-xs">
           <span>🥄</span>
           <span>
-            {recipe.ingredients?.length || 0}{' '}
-            {recipe.ingredients?.length === 1 ? 'ingredient' : 'ingredients'}
+            {recipe.ingredients?.length || 0} 种食材
           </span>
         </div>
       </div>

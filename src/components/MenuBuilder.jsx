@@ -22,7 +22,7 @@ function RecipeRow({ recipe, selected, onToggle }) {
       </div>
       <div className="min-w-0">
         <p className="font-medium text-stone-900 text-sm truncate">{recipe.name}</p>
-        <p className="text-stone-400 text-xs">{recipe.ingredients?.length || 0} ingredients</p>
+        <p className="text-stone-400 text-xs">{recipe.ingredients?.length || 0} 种食材</p>
       </div>
     </button>
   )
@@ -60,8 +60,8 @@ export default function MenuBuilder({ recipes, families, members, onSave, onClos
   }
 
   function handleSave() {
-    if (!menuName.trim()) { setError('Menu name is required'); return }
-    if (totalSelected() === 0) { setError('Select at least one recipe'); return }
+    if (!menuName.trim()) { setError('菜单名称为必填项'); return }
+    if (totalSelected() === 0) { setError('请至少选择一个食谱'); return }
 
     if (mode === 'personal') {
       onSave({ name: menuName.trim(), recipeIds: personalIds })
@@ -90,8 +90,8 @@ export default function MenuBuilder({ recipes, families, members, onSave, onClos
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-stone-100">
           <div>
-            <h2 className="font-serif text-xl font-semibold text-stone-900">Build a Menu</h2>
-            <p className="text-stone-400 text-xs mt-0.5">Select recipes to include</p>
+            <h2 className="font-serif text-xl font-semibold text-stone-900">创建菜单</h2>
+            <p className="text-stone-400 text-xs mt-0.5">选择要包含的食谱</p>
           </div>
           <button onClick={onClose} className="text-stone-400 hover:text-stone-600 text-xl leading-none p-1">×</button>
         </div>
@@ -105,7 +105,7 @@ export default function MenuBuilder({ recipes, families, members, onSave, onClos
                 mode === 'personal' ? 'bg-stone-900 text-white' : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
               }`}
             >
-              Personal
+              个人
             </button>
             <button
               onClick={() => setMode('family')}
@@ -113,7 +113,7 @@ export default function MenuBuilder({ recipes, families, members, onSave, onClos
                 mode === 'family' ? 'bg-stone-900 text-white' : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
               }`}
             >
-              Family
+              家庭
             </button>
           </div>
         )}
@@ -142,7 +142,7 @@ export default function MenuBuilder({ recipes, families, members, onSave, onClos
           {/* Personal mode */}
           {mode === 'personal' && (
             recipes.length === 0
-              ? <p className="text-stone-400 text-sm text-center py-8">No recipes yet.</p>
+              ? <p className="text-stone-400 text-sm text-center py-8">暂无食谱。</p>
               : recipes.map(r => (
                 <RecipeRow
                   key={r.id}
@@ -156,7 +156,7 @@ export default function MenuBuilder({ recipes, families, members, onSave, onClos
           {/* Family mode */}
           {mode === 'family' && (
             familyMembers.length === 0
-              ? <p className="text-stone-400 text-sm text-center py-8">No members in this family yet. Add members in the Family tab.</p>
+              ? <p className="text-stone-400 text-sm text-center py-8">此家庭暂无成员，请在"家庭"标签页中添加成员。</p>
               : familyMembers.map(member => {
                 const memberRecipeIds = contributions[member.id] ?? new Set()
                 return (
@@ -166,13 +166,13 @@ export default function MenuBuilder({ recipes, families, members, onSave, onClos
                       <MemberAvatar member={member} size="sm" />
                       <span className="text-sm font-semibold text-stone-800">{member.name}</span>
                       <span className="text-stone-400 text-xs ml-auto">
-                        {memberRecipeIds.size} selected
+                        已选 {memberRecipeIds.size}
                       </span>
                     </div>
                     {/* Recipes for this member */}
                     <div className="space-y-2 pl-9">
                       {recipes.length === 0
-                        ? <p className="text-stone-400 text-xs">No recipes available.</p>
+                        ? <p className="text-stone-400 text-xs">暂无可用食谱。</p>
                         : recipes.map(r => (
                           <RecipeRow
                             key={r.id}
@@ -194,7 +194,7 @@ export default function MenuBuilder({ recipes, families, members, onSave, onClos
           <div>
             <input
               type="text"
-              placeholder="Menu name (e.g. Sunday Dinner)"
+              placeholder="菜单名称（例：周日晚餐）"
               value={menuName}
               onChange={e => { setMenuName(e.target.value); setError('') }}
               className="w-full border border-stone-200 rounded-xl px-4 py-2.5 text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-300"
@@ -206,13 +206,13 @@ export default function MenuBuilder({ recipes, families, members, onSave, onClos
               onClick={onClose}
               className="flex-1 border border-stone-200 text-stone-600 text-sm font-medium py-2.5 rounded-xl hover:bg-stone-50 transition-colors"
             >
-              Cancel
+              取消
             </button>
             <button
               onClick={handleSave}
               className="flex-1 bg-stone-900 text-white text-sm font-medium py-2.5 rounded-xl hover:bg-stone-700 transition-colors"
             >
-              Save Menu ({totalSelected()})
+              保存菜单（{totalSelected()}）
             </button>
           </div>
         </div>

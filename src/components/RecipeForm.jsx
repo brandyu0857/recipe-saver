@@ -41,7 +41,7 @@ export default function RecipeForm({ initial, onSave, onClose }) {
 
   function validate() {
     const errs = {}
-    if (!form.name.trim()) errs.name = 'Recipe name is required'
+    if (!form.name.trim()) errs.name = '食谱名称为必填项'
     return errs
   }
 
@@ -58,7 +58,7 @@ export default function RecipeForm({ initial, onSave, onClose }) {
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-stone-100">
           <h2 className="font-serif text-lg font-semibold text-stone-900">
-            {initial ? 'Edit Recipe' : 'New Recipe'}
+            {initial ? '编辑食谱' : '新建食谱'}
           </h2>
           <button
             onClick={onClose}
@@ -75,7 +75,7 @@ export default function RecipeForm({ initial, onSave, onClose }) {
             {/* Photo */}
             <div>
               <label className="block text-xs font-medium text-stone-500 uppercase tracking-wide mb-2">
-                Photo
+                照片
               </label>
               {form.photo ? (
                 <div className="relative rounded-xl overflow-hidden aspect-video bg-stone-100">
@@ -85,7 +85,7 @@ export default function RecipeForm({ initial, onSave, onClose }) {
                     onClick={() => set('photo', null)}
                     className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full hover:bg-black/80 transition-colors"
                   >
-                    Remove
+                    移除
                   </button>
                 </div>
               ) : (
@@ -95,7 +95,7 @@ export default function RecipeForm({ initial, onSave, onClose }) {
                   className="w-full border-2 border-dashed border-stone-200 rounded-xl py-8 flex flex-col items-center gap-2 hover:border-stone-400 hover:bg-stone-50 transition-colors"
                 >
                   <span className="text-3xl">📷</span>
-                  <span className="text-sm text-stone-400">Tap to add a photo</span>
+                  <span className="text-sm text-stone-400">点击添加照片</span>
                 </button>
               )}
               <input
@@ -110,13 +110,13 @@ export default function RecipeForm({ initial, onSave, onClose }) {
             {/* Name */}
             <div>
               <label className="block text-xs font-medium text-stone-500 uppercase tracking-wide mb-1">
-                Recipe Name <span className="text-red-400">*</span>
+                食谱名称 <span className="text-red-400">*</span>
               </label>
               <input
                 type="text"
                 value={form.name}
                 onChange={e => set('name', e.target.value)}
-                placeholder="e.g. Grandma's Lasagna"
+                placeholder="例：奶奶的千层面"
                 className={`w-full border rounded-lg px-3 py-2.5 text-stone-900 placeholder:text-stone-300 outline-none focus:ring-2 focus:ring-stone-900/10 transition ${
                   errors.name ? 'border-red-300' : 'border-stone-200'
                 }`}
@@ -129,7 +129,7 @@ export default function RecipeForm({ initial, onSave, onClose }) {
             {/* Ingredients */}
             <div>
               <label className="block text-xs font-medium text-stone-500 uppercase tracking-wide mb-2">
-                Ingredients
+                食材
               </label>
               <div className="flex gap-2 mb-3">
                 <input
@@ -137,7 +137,7 @@ export default function RecipeForm({ initial, onSave, onClose }) {
                   value={ingredientInput}
                   onChange={e => setIngredientInput(e.target.value)}
                   onKeyDown={handleIngredientKey}
-                  placeholder="e.g. 2 cups flour"
+                  placeholder="例：2杯面粉"
                   className="flex-1 border border-stone-200 rounded-lg px-3 py-2.5 text-stone-900 placeholder:text-stone-300 outline-none focus:ring-2 focus:ring-stone-900/10 transition text-sm"
                 />
                 <button
@@ -145,7 +145,7 @@ export default function RecipeForm({ initial, onSave, onClose }) {
                   onClick={addIngredient}
                   className="bg-stone-900 text-white px-4 rounded-lg text-sm font-medium hover:bg-stone-700 transition-colors"
                 >
-                  Add
+                  添加
                 </button>
               </div>
 
@@ -179,13 +179,13 @@ export default function RecipeForm({ initial, onSave, onClose }) {
               onClick={onClose}
               className="flex-1 border border-stone-200 text-stone-600 py-3 rounded-xl font-medium hover:bg-stone-50 transition-colors"
             >
-              Cancel
+              取消
             </button>
             <button
               type="submit"
               className="flex-1 bg-stone-900 text-white py-3 rounded-xl font-medium hover:bg-stone-700 transition-colors"
             >
-              {initial ? 'Save Changes' : 'Save Recipe'}
+              {initial ? '保存更改' : '保存食谱'}
             </button>
           </div>
         </form>

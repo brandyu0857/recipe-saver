@@ -13,7 +13,7 @@ function RecipeItem({ recipe }) {
       <div className="min-w-0">
         <p className="font-serif font-semibold text-stone-900 text-sm truncate">{recipe.name}</p>
         <p className="text-stone-400 text-xs mt-0.5">
-          {recipe.ingredients?.length || 0} ingredients
+          {recipe.ingredients?.length || 0} 种食材
         </p>
       </div>
     </div>
@@ -41,7 +41,7 @@ function RecipePickerRow({ recipe, selected, onToggle }) {
       </div>
       <div className="min-w-0">
         <p className="font-medium text-stone-900 text-sm truncate">{recipe.name}</p>
-        <p className="text-stone-400 text-xs">{recipe.ingredients?.length || 0} ingredients</p>
+        <p className="text-stone-400 text-xs">{recipe.ingredients?.length || 0} 种食材</p>
       </div>
     </button>
   )
@@ -101,8 +101,8 @@ export default function MenuDetail({ menu, recipes, onClose, onDelete, onRename,
                   onKeyDown={e => { if (e.key === 'Enter') handleRename(); if (e.key === 'Escape') setRenaming(false) }}
                   className="flex-1 border border-stone-200 rounded-lg px-3 py-1.5 text-sm font-serif font-semibold text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-300"
                 />
-                <button onClick={handleRename} className="text-xs bg-stone-900 text-white px-3 py-1.5 rounded-lg">Save</button>
-                <button onClick={() => { setRenaming(false); setNewName(menu.name) }} className="text-xs text-stone-400 px-2 py-1.5">Cancel</button>
+                <button onClick={handleRename} className="text-xs bg-stone-900 text-white px-3 py-1.5 rounded-lg">保存</button>
+                <button onClick={() => { setRenaming(false); setNewName(menu.name) }} className="text-xs text-stone-400 px-2 py-1.5">取消</button>
               </div>
             ) : (
               <div className="flex items-center gap-2">
@@ -111,18 +111,18 @@ export default function MenuDetail({ menu, recipes, onClose, onDelete, onRename,
                   onClick={() => setRenaming(true)}
                   className="text-stone-400 hover:text-stone-600 text-xs border border-stone-200 px-2 py-0.5 rounded-md shrink-0"
                 >
-                  Rename
+                  重命名
                 </button>
               </div>
             )}
             <div className="flex items-center gap-2 mt-1">
               {isFamily && (
                 <span className="text-xs bg-stone-100 text-stone-500 px-2 py-0.5 rounded-full">
-                  👨‍👩‍👧‍👦 {menu.familyName ?? 'Family'}
+                  👨‍👩‍👧‍👦 {menu.familyName ?? '家庭'}
                 </span>
               )}
               <p className="text-stone-400 text-xs">
-                {totalCount} {totalCount === 1 ? 'recipe' : 'recipes'}
+                {totalCount} 个食谱
               </p>
             </div>
           </div>
@@ -132,7 +132,7 @@ export default function MenuDetail({ menu, recipes, onClose, onDelete, onRename,
         {/* Body */}
         {picking ? (
           <div className="flex-1 overflow-y-auto px-5 py-4 space-y-2">
-            <p className="text-xs text-stone-400 mb-3">Select recipes to include in this menu</p>
+            <p className="text-xs text-stone-400 mb-3">选择要加入此菜单的食谱</p>
             {recipes.map(r => (
               <RecipePickerRow
                 key={r.id}
@@ -146,14 +146,14 @@ export default function MenuDetail({ menu, recipes, onClose, onDelete, onRename,
           <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
             {!isFamily && (
               personalRecipes.length === 0
-                ? <p className="text-stone-400 text-sm text-center py-8">No recipes found.</p>
+                ? <p className="text-stone-400 text-sm text-center py-8">未找到食谱。</p>
                 : <div className="space-y-3">
                     {personalRecipes.map(r => <RecipeItem key={r.id} recipe={r} />)}
                   </div>
             )}
             {isFamily && (
               menu.contributions.length === 0
-                ? <p className="text-stone-400 text-sm text-center py-8">No contributions yet.</p>
+                ? <p className="text-stone-400 text-sm text-center py-8">暂无贡献。</p>
                 : menu.contributions.map(contrib => {
                     const contribRecipes = recipes.filter(r => contrib.recipeIds.includes(r.id))
                     return (
@@ -165,12 +165,12 @@ export default function MenuDetail({ menu, recipes, onClose, onDelete, onRename,
                           />
                           <span className="text-sm font-semibold text-stone-800">{contrib.memberName}</span>
                           <span className="text-stone-400 text-xs ml-auto">
-                            {contribRecipes.length} {contribRecipes.length === 1 ? 'recipe' : 'recipes'}
+                            {contribRecipes.length} 个食谱
                           </span>
                         </div>
                         <div className="space-y-2 pl-9">
                           {contribRecipes.length === 0
-                            ? <p className="text-stone-400 text-xs">No recipes.</p>
+                            ? <p className="text-stone-400 text-xs">暂无食谱。</p>
                             : contribRecipes.map(r => <RecipeItem key={r.id} recipe={r} />)
                           }
                         </div>
@@ -189,13 +189,13 @@ export default function MenuDetail({ menu, recipes, onClose, onDelete, onRename,
                 onClick={() => setPicking(false)}
                 className="flex-1 border border-stone-200 text-stone-600 text-sm font-medium py-2.5 rounded-xl hover:bg-stone-50 transition-colors"
               >
-                Cancel
+                取消
               </button>
               <button
                 onClick={confirmPick}
                 className="flex-1 bg-stone-900 text-white text-sm font-medium py-2.5 rounded-xl hover:bg-stone-700 transition-colors"
               >
-                Save ({pickedIds?.size ?? 0})
+                保存（{pickedIds?.size ?? 0}）
               </button>
             </div>
           ) : (
@@ -205,14 +205,14 @@ export default function MenuDetail({ menu, recipes, onClose, onDelete, onRename,
                   onClick={openPicker}
                   className="w-full border border-stone-200 text-stone-700 text-sm font-medium py-2.5 rounded-xl hover:bg-stone-50 transition-colors"
                 >
-                  Edit Recipes
+                  编辑食谱
                 </button>
               )}
               <button
-                onClick={() => { if (confirm(`Delete menu "${menu.name}"?`)) onDelete(menu.id) }}
+                onClick={() => { if (confirm(`删除菜单"${menu.name}"？`)) onDelete(menu.id) }}
                 className="w-full border border-red-200 text-red-500 text-sm font-medium py-2.5 rounded-xl hover:bg-red-50 transition-colors"
               >
-                Delete Menu
+                删除菜单
               </button>
             </>
           )}

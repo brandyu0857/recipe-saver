@@ -37,7 +37,7 @@ export default function RecipeDetail({ recipe, onEdit, onDelete, onClose }) {
           {recipe.ingredients?.length > 0 && (
             <div>
               <h3 className="text-xs font-medium text-stone-500 uppercase tracking-wide mb-3">
-                Ingredients ({recipe.ingredients.length})
+                食材（{recipe.ingredients.length}）
               </h3>
               <ul className="space-y-2">
                 {recipe.ingredients.map((ing, i) => (
@@ -51,7 +51,7 @@ export default function RecipeDetail({ recipe, onEdit, onDelete, onClose }) {
           )}
 
           {!recipe.description && !recipe.ingredients?.length && (
-            <p className="text-stone-400 text-sm italic">No details added yet.</p>
+            <p className="text-stone-400 text-sm italic">暂未添加详情。</p>
           )}
         </div>
 
@@ -61,13 +61,13 @@ export default function RecipeDetail({ recipe, onEdit, onDelete, onClose }) {
             onClick={onDelete}
             className="border border-stone-200 text-red-400 hover:text-red-500 hover:border-red-200 hover:bg-red-50 px-4 py-3 rounded-xl font-medium transition-colors text-sm"
           >
-            Delete
+            删除
           </button>
           <button
             onClick={onEdit}
             className="flex-1 bg-stone-900 text-white py-3 rounded-xl font-medium hover:bg-stone-700 transition-colors"
           >
-            Edit Recipe
+            编辑食谱
           </button>
         </div>
       </div>

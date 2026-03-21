@@ -49,7 +49,7 @@ export default function App() {
   }
 
   async function handleDelete(recipe) {
-    if (!confirm(`Delete "${recipe.name}"?`)) return
+    if (!confirm(`删除"${recipe.name}"？`)) return
     await db.recipes.delete(recipe.id)
     setRecipes(await db.recipes.getAll())
     setSelectedRecipe(null)
@@ -120,9 +120,9 @@ export default function App() {
   }
 
   const TABS = [
-    { key: 'recipes', label: 'Recipes' },
-    { key: 'menus', label: 'Menus', badge: menus.length || null },
-    { key: 'family', label: 'Family', badge: families.length || null },
+    { key: 'recipes', label: '食谱' },
+    { key: 'menus', label: '菜单', badge: menus.length || null },
+    { key: 'family', label: '家庭', badge: families.length || null },
   ]
 
   return (
@@ -132,7 +132,7 @@ export default function App() {
         <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-xl">📖</span>
-            <span className="font-serif text-lg font-semibold text-stone-900">My Recipes</span>
+            <span className="font-serif text-lg font-semibold text-stone-900">我的食谱</span>
           </div>
           <div className="flex items-center gap-2">
             {tab === 'recipes' && recipes.length > 0 && (
@@ -141,7 +141,7 @@ export default function App() {
                 className="border border-stone-200 text-stone-700 text-sm font-medium px-3 py-2 rounded-xl hover:bg-stone-50 transition-colors flex items-center gap-1.5"
               >
                 <span className="text-base leading-none">🍽️</span>
-                Build Menu
+                创建菜单
               </button>
             )}
             {tab === 'recipes' && (
@@ -150,7 +150,7 @@ export default function App() {
                 className="bg-stone-900 text-white text-sm font-medium px-4 py-2 rounded-xl hover:bg-stone-700 transition-colors flex items-center gap-1.5"
               >
                 <span className="text-base leading-none">+</span>
-                Add Recipe
+                添加食谱
               </button>
             )}
           </div>
@@ -187,19 +187,19 @@ export default function App() {
           recipes.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 text-center">
               <div className="text-6xl mb-4">🍳</div>
-              <h2 className="font-serif text-2xl font-semibold text-stone-800 mb-2">No recipes yet</h2>
-              <p className="text-stone-400 text-sm mb-6">Save your first recipe to get started</p>
+              <h2 className="font-serif text-2xl font-semibold text-stone-800 mb-2">暂无食谱</h2>
+              <p className="text-stone-400 text-sm mb-6">保存您的第一个食谱以开始</p>
               <button
                 onClick={openAdd}
                 className="bg-stone-900 text-white text-sm font-medium px-6 py-3 rounded-xl hover:bg-stone-700 transition-colors"
               >
-                Add your first recipe
+                添加第一个食谱
               </button>
             </div>
           ) : (
             <>
               <p className="text-stone-400 text-xs mb-4 uppercase tracking-wide font-medium">
-                {recipes.length} {recipes.length === 1 ? 'recipe' : 'recipes'}
+                {recipes.length} 个食谱
               </p>
               <div className="grid grid-cols-2 gap-4">
                 {recipes.map(recipe => (
@@ -215,26 +215,26 @@ export default function App() {
           menus.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 text-center">
               <div className="text-6xl mb-4">🍽️</div>
-              <h2 className="font-serif text-2xl font-semibold text-stone-800 mb-2">No menus yet</h2>
-              <p className="text-stone-400 text-sm mb-6">Build a menu from your saved recipes</p>
+              <h2 className="font-serif text-2xl font-semibold text-stone-800 mb-2">暂无菜单</h2>
+              <p className="text-stone-400 text-sm mb-6">从已保存的食谱创建菜单</p>
               <button
                 onClick={() => { setTab('recipes'); setShowMenuBuilder(true) }}
                 className="bg-stone-900 text-white text-sm font-medium px-6 py-3 rounded-xl hover:bg-stone-700 transition-colors"
               >
-                Build your first menu
+                创建第一个菜单
               </button>
             </div>
           ) : (
             <>
               <div className="flex items-center justify-between mb-4">
                 <p className="text-stone-400 text-xs uppercase tracking-wide font-medium">
-                  {menus.length} {menus.length === 1 ? 'menu' : 'menus'}
+                  {menus.length} 个菜单
                 </p>
                 <button
                   onClick={() => { setTab('recipes'); setShowMenuBuilder(true) }}
                   className="text-xs text-stone-600 border border-stone-200 px-3 py-1.5 rounded-lg hover:bg-stone-50 transition-colors flex items-center gap-1"
                 >
-                  <span>+</span> New Menu
+                  <span>+</span> 新菜单
                 </button>
               </div>
               <div className="space-y-3">
@@ -266,9 +266,9 @@ export default function App() {
                         <p className="font-serif font-semibold text-stone-900 truncate">{menu.name}</p>
                         <div className="flex items-center gap-2 mt-0.5">
                           {isFamily && (
-                            <span className="text-xs text-stone-400">👨‍👩‍👧‍👦 {menu.familyName ?? 'Family'} ·</span>
+                            <span className="text-xs text-stone-400">👨‍👩‍👧‍👦 {menu.familyName ?? '家庭'} ·</span>
                           )}
-                          <span className="text-stone-400 text-xs">{count} {count === 1 ? 'recipe' : 'recipes'}</span>
+                          <span className="text-stone-400 text-xs">{count} 个食谱</span>
                         </div>
                       </div>
                       <span className="text-stone-300 text-lg">›</span>
