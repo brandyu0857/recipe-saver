@@ -12,9 +12,6 @@ function RecipeItem({ recipe }) {
       </div>
       <div className="min-w-0">
         <p className="font-serif font-semibold text-stone-900 text-sm truncate">{recipe.name}</p>
-        {recipe.description && (
-          <p className="text-stone-400 text-xs line-clamp-1">{recipe.description}</p>
-        )}
         <p className="text-stone-400 text-xs mt-0.5">
           {recipe.ingredients?.length || 0} ingredients
         </p>
@@ -23,16 +20,43 @@ function RecipeItem({ recipe }) {
   )
 }
 
-export default function MenuDetail({ menu, recipes, onClose, onDelete, onRename }) {
+function RecipePickerRow({ recipe, selected, onToggle }) {
+  return (
+    <button
+      onClick={onToggle}
+      className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left ${
+        selected ? 'border-stone-900 bg-stone-50' : 'border-stone-100 bg-white hover:border-stone-200'
+      }`}
+    >
+      <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${
+        selected ? 'bg-stone-900 border-stone-900' : 'border-stone-300'
+      }`}>
+        {selected && <span className="text-white text-xs leading-none">✓</span>}
+      </div>
+      <div className="w-10 h-10 rounded-lg overflow-hidden bg-stone-100 shrink-0">
+        {recipe.photo
+          ? <img src={recipe.photo} alt={recipe.name} className="w-full h-full object-cover" />
+          : <div className="w-full h-full flex items-center justify-center text-lg">🍽️</div>
+        }
+      </div>
+      <div className="min-w-0">
+        <p className="font-medium text-stone-900 text-sm truncate">{recipe.name}</p>
+        <p className="text-stone-400 text-xs">{recipe.ingredients?.length || 0} ingredients</p>
+      </div>
+    </button>
+  )
+}
+
+export default function MenuDetail({ menu, recipes, onClose, onDelete, onRename, onUpdateRecipes }) {
   const [renaming, setRenaming] = useState(false)
   const [newName, setNewName] = useState(menu.name)
+  const [picking, setPicking] = useState(false)
+  const [pickedIds, setPickedIds] = useState(null) // null until picker opens
 
   const isFamily = Boolean(menu.contributions)
 
-  // Flat list for personal menus
   const personalRecipes = isFamily ? [] : recipes.filter(r => menu.recipeIds?.includes(r.id))
 
-  // Total count
   const totalCount = isFamily
     ? menu.contributions.reduce((s, c) => s + c.recipeIds.length, 0)
     : personalRecipes.length
@@ -40,6 +64,24 @@ export default function MenuDetail({ menu, recipes, onClose, onDelete, onRename 
   function handleRename() {
     if (newName.trim() && newName.trim() !== menu.name) onRename(menu.id, newName.trim())
     setRenaming(false)
+  }
+
+  function openPicker() {
+    setPickedIds(new Set(menu.recipeIds ?? []))
+    setPicking(true)
+  }
+
+  function togglePick(id) {
+    setPickedIds(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
+
+  function confirmPick() {
+    onUpdateRecipes(menu.id, [...pickedIds])
+    setPicking(false)
   }
 
   return (
@@ -88,55 +130,92 @@ export default function MenuDetail({ menu, recipes, onClose, onDelete, onRename 
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
-          {/* Personal menu: flat list */}
-          {!isFamily && (
-            personalRecipes.length === 0
-              ? <p className="text-stone-400 text-sm text-center py-8">No recipes found.</p>
-              : <div className="space-y-3">
-                  {personalRecipes.map(r => <RecipeItem key={r.id} recipe={r} />)}
-                </div>
-          )}
-
-          {/* Family menu: grouped by member */}
-          {isFamily && (
-            menu.contributions.length === 0
-              ? <p className="text-stone-400 text-sm text-center py-8">No contributions yet.</p>
-              : menu.contributions.map(contrib => {
-                  const contribRecipes = recipes.filter(r => contrib.recipeIds.includes(r.id))
-                  return (
-                    <div key={contrib.memberId}>
-                      {/* Member heading */}
-                      <div className="flex items-center gap-2 mb-2">
-                        <MemberAvatar
-                          member={{ name: contrib.memberName, color: contrib.memberColor }}
-                          size="sm"
-                        />
-                        <span className="text-sm font-semibold text-stone-800">{contrib.memberName}</span>
-                        <span className="text-stone-400 text-xs ml-auto">
-                          {contribRecipes.length} {contribRecipes.length === 1 ? 'recipe' : 'recipes'}
-                        </span>
+        {picking ? (
+          <div className="flex-1 overflow-y-auto px-5 py-4 space-y-2">
+            <p className="text-xs text-stone-400 mb-3">Select recipes to include in this menu</p>
+            {recipes.map(r => (
+              <RecipePickerRow
+                key={r.id}
+                recipe={r}
+                selected={pickedIds.has(r.id)}
+                onToggle={() => togglePick(r.id)}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
+            {!isFamily && (
+              personalRecipes.length === 0
+                ? <p className="text-stone-400 text-sm text-center py-8">No recipes found.</p>
+                : <div className="space-y-3">
+                    {personalRecipes.map(r => <RecipeItem key={r.id} recipe={r} />)}
+                  </div>
+            )}
+            {isFamily && (
+              menu.contributions.length === 0
+                ? <p className="text-stone-400 text-sm text-center py-8">No contributions yet.</p>
+                : menu.contributions.map(contrib => {
+                    const contribRecipes = recipes.filter(r => contrib.recipeIds.includes(r.id))
+                    return (
+                      <div key={contrib.memberId}>
+                        <div className="flex items-center gap-2 mb-2">
+                          <MemberAvatar
+                            member={{ name: contrib.memberName, color: contrib.memberColor }}
+                            size="sm"
+                          />
+                          <span className="text-sm font-semibold text-stone-800">{contrib.memberName}</span>
+                          <span className="text-stone-400 text-xs ml-auto">
+                            {contribRecipes.length} {contribRecipes.length === 1 ? 'recipe' : 'recipes'}
+                          </span>
+                        </div>
+                        <div className="space-y-2 pl-9">
+                          {contribRecipes.length === 0
+                            ? <p className="text-stone-400 text-xs">No recipes.</p>
+                            : contribRecipes.map(r => <RecipeItem key={r.id} recipe={r} />)
+                          }
+                        </div>
                       </div>
-                      <div className="space-y-2 pl-9">
-                        {contribRecipes.length === 0
-                          ? <p className="text-stone-400 text-xs">No recipes.</p>
-                          : contribRecipes.map(r => <RecipeItem key={r.id} recipe={r} />)
-                        }
-                      </div>
-                    </div>
-                  )
-                })
-          )}
-        </div>
+                    )
+                  })
+            )}
+          </div>
+        )}
 
         {/* Footer */}
-        <div className="px-5 pb-5 pt-4 border-t border-stone-100">
-          <button
-            onClick={() => { if (confirm(`Delete menu "${menu.name}"?`)) onDelete(menu.id) }}
-            className="w-full border border-red-200 text-red-500 text-sm font-medium py-2.5 rounded-xl hover:bg-red-50 transition-colors"
-          >
-            Delete Menu
-          </button>
+        <div className="px-5 pb-5 pt-4 border-t border-stone-100 space-y-2">
+          {picking ? (
+            <div className="flex gap-2">
+              <button
+                onClick={() => setPicking(false)}
+                className="flex-1 border border-stone-200 text-stone-600 text-sm font-medium py-2.5 rounded-xl hover:bg-stone-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmPick}
+                className="flex-1 bg-stone-900 text-white text-sm font-medium py-2.5 rounded-xl hover:bg-stone-700 transition-colors"
+              >
+                Save ({pickedIds?.size ?? 0})
+              </button>
+            </div>
+          ) : (
+            <>
+              {!isFamily && (
+                <button
+                  onClick={openPicker}
+                  className="w-full border border-stone-200 text-stone-700 text-sm font-medium py-2.5 rounded-xl hover:bg-stone-50 transition-colors"
+                >
+                  Edit Recipes
+                </button>
+              )}
+              <button
+                onClick={() => { if (confirm(`Delete menu "${menu.name}"?`)) onDelete(menu.id) }}
+                className="w-full border border-red-200 text-red-500 text-sm font-medium py-2.5 rounded-xl hover:bg-red-50 transition-colors"
+              >
+                Delete Menu
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>

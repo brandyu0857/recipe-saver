@@ -74,6 +74,13 @@ export default function App() {
     setSelectedMenu(prev => prev ? { ...prev, name: newName } : prev)
   }
 
+  async function handleUpdateMenuRecipes(id, recipeIds) {
+    await db.menus.update(id, { recipeIds, updatedAt: new Date() })
+    const updated = await db.menus.getAll()
+    setMenus(updated)
+    setSelectedMenu(updated.find(m => m.id === id) ?? null)
+  }
+
   async function handleCreateFamily(name) {
     await db.families.add({ name, createdAt: new Date() })
     setFamilies(await db.families.getAll())
@@ -320,6 +327,7 @@ export default function App() {
           onClose={() => setSelectedMenu(null)}
           onDelete={handleDeleteMenu}
           onRename={handleRenameMenu}
+          onUpdateRecipes={handleUpdateMenuRecipes}
         />
       )}
     </div>
