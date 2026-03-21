@@ -126,20 +126,6 @@ export default function RecipeForm({ initial, onSave, onClose }) {
               )}
             </div>
 
-            {/* Notes */}
-            <div>
-              <label className="block text-xs font-medium text-stone-500 uppercase tracking-wide mb-1">
-                Notes
-              </label>
-              <textarea
-                value={form.description}
-                onChange={e => set('description', e.target.value)}
-                placeholder="Any notes, tips, or a short description..."
-                rows={3}
-                className="w-full border border-stone-200 rounded-lg px-3 py-2.5 text-stone-900 placeholder:text-stone-300 outline-none focus:ring-2 focus:ring-stone-900/10 transition resize-none"
-              />
-            </div>
-
             {/* Ingredients */}
             <div>
               <label className="block text-xs font-medium text-stone-500 uppercase tracking-wide mb-2">
